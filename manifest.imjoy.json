@@ -1,0 +1,29 @@
+{
+ "name": "ImJoy Core Plugins",
+ "description": "Core plugins for ImJoy.",
+ "uri_root": "",
+ "version": "0.2.0",
+ "plugins": [
+  {
+   "name": "BrowserFS",
+   "type": "iframe",
+   "tags": [],
+   "ui": "",
+   "cover": "",
+   "version": "0.1.0",
+   "description": "A virtual nodejs-style file system in the browser",
+   "icon": "extension",
+   "inputs": null,
+   "outputs": null,
+   "api_version": "0.1.6",
+   "env": "",
+   "permissions": [],
+   "requirements": [
+    "https://cdnjs.cloudflare.com/ajax/libs/BrowserFS/1.4.3/browserfs.min.js"
+   ],
+   "dependencies": [],
+   "uri": "docs/BrowserFS.imjoy.html"
+  }
+ ],
+ "collections": []
+}
