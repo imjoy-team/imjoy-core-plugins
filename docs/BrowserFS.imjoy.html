@@ -1,106 +1,106 @@
 <docs lang="markdown">
 
-    ## Browser File System
-    
-    A virtual nodejs-style file system in the browser
-    
-    More information: https://github.com/jvilk/BrowserFS
-    
-    </docs>
-    
-    <config lang="json">
-    {
-        "name": "BrowserFS",
-        "type": "iframe",
-        "tags": [],
-        "ui": "",
-        "cover": "",
-        "version": "0.1.0",
-        "description": "A virtual nodejs-style file system in the browser",
-        "icon": "extension",
-        "inputs": null,
-        "outputs": null,
-        "api_version": "0.1.6",
-        "env": "",
-        "permissions": [],
-        "requirements": ["https://cdnjs.cloudflare.com/ajax/libs/BrowserFS/1.4.3/browserfs.min.js"],
-        "dependencies": []
+## Browser File System
+
+A virtual nodejs-style file system in the browser
+
+More information: https://github.com/jvilk/BrowserFS
+
+</docs>
+
+<config lang="json">
+{
+    "name": "BrowserFS",
+    "type": "iframe",
+    "tags": [],
+    "ui": "",
+    "cover": "",
+    "version": "0.1.0",
+    "description": "A virtual nodejs-style file system in the browser",
+    "icon": "extension",
+    "inputs": null,
+    "outputs": null,
+    "api_version": "0.1.6",
+    "env": "",
+    "permissions": [],
+    "requirements": ["https://cdnjs.cloudflare.com/ajax/libs/BrowserFS/1.4.3/browserfs.min.js"],
+    "dependencies": []
+}
+</config>
+
+<script lang="javascript">
+
+const ArrayBufferView = Object.getPrototypeOf(
+    Object.getPrototypeOf(new Uint8Array())
+).constructor;
+
+class FileSystemManager {
+    constructor() {
+        this.fs = null;
+        this.path = null;
+        this.buffer = null;
+        this.api = {};
     }
-    </config>
-    
-    <script lang="javascript">
-    
-    const ArrayBufferView = Object.getPrototypeOf(
-        Object.getPrototypeOf(new Uint8Array())
-    ).constructor;
-    
-    class FileSystemManager {
-        constructor() {
-            this.fs = null;
-            this.path = null;
-            this.buffer = null;
-            this.api = {};
-        }
-        init() {
-            return new Promise((resolve, reject) => {
-                BrowserFS.configure({
-                    fs: "MountableFileSystem",
-                    options: {
-                        "/tmp": { fs: "InMemory", options: { storeName: "tmp" } },
-                        "/home": { fs: "IndexedDB", options: { storeName: "home" } },
-                        // '/mnt/h5': { fs: "HTML5FS", options: {} }
-                    },
-                    },
-                    e => {
-                    if (e) {
-                        reject(e);
-                        return;
-                    }
-                    const _fs = BrowserFS.BFSRequire("fs");
-                    const buffer = BrowserFS.BFSRequire("buffer");
-    
-                    //convert arraybuffer to Buffer
-                    var convert = function(fn) {
-                        return function() {
-                        const args = Array.prototype.slice.call(arguments);
-                        const newargs = [];
-                        for (let arg of args) {
-                            if (arg instanceof ArrayBuffer) {
-                            newargs.push(buffer.Buffer(arg));
-                            } else if (arg instanceof ArrayBufferView) {
-                            newargs.push(buffer.Buffer(arg.buffer));
-                            } else {
-                            newargs.push(arg);
-                            }
+    init() {
+        return new Promise((resolve, reject) => {
+            BrowserFS.configure({
+                fs: "MountableFileSystem",
+                options: {
+                    "/tmp": { fs: "InMemory", options: { storeName: "tmp" } },
+                    "/home": { fs: "IndexedDB", options: { storeName: "home" } },
+                    // '/mnt/h5': { fs: "HTML5FS", options: {} }
+                },
+                },
+                e => {
+                if (e) {
+                    reject(e);
+                    return;
+                }
+                const _fs = BrowserFS.BFSRequire("fs");
+                const buffer = BrowserFS.BFSRequire("buffer");
+
+                //convert arraybuffer to Buffer
+                var convert = function(fn) {
+                    return function() {
+                    const args = Array.prototype.slice.call(arguments);
+                    const newargs = [];
+                    for (let arg of args) {
+                        if (arg instanceof ArrayBuffer) {
+                        newargs.push(buffer.Buffer(arg));
+                        } else if (arg instanceof ArrayBufferView) {
+                        newargs.push(buffer.Buffer(arg.buffer));
+                        } else {
+                        newargs.push(arg);
                         }
-                        return fn.apply(this, newargs);
-                        };
-                    };
-    
-                    this.fs = {};
-                    for (let k in _fs) {
-                        this.fs[k] = convert(_fs[k]);
                     }
-                    this.path = BrowserFS.BFSRequire("path");
-                    resolve({ fs: this.fs, path: this.path });
-                
-                });
+                    return fn.apply(this, newargs);
+                    };
+                };
+
+                this.fs = {};
+                for (let k in _fs) {
+                    this.fs[k] = convert(_fs[k]);
+                }
+                this.path = BrowserFS.BFSRequire("path");
+                resolve({ fs: this.fs, path: this.path });
+
             });
-        }
-        destroy() {}
+        });
     }
-    
-    const fileSystem = new FileSystemManager()
-    
-    fileSystem.init().then((fs_api)=>{
-        console.log(fs_api)
-        fs_api.setup = ()=>{
-            api.log('Browser file system initialized')
-        }
-        api.export(fs_api)
-    }).catch((e)=>{
-        console.error(e)
-        api.alert('Failed to initialize the browser file system.')
-    })
-    
-    </script>
+    destroy() {}
+}
+
+const fileSystem = new FileSystemManager()
+
+fileSystem.init().then((fs_api)=>{
+    console.log(fs_api)
+    fs_api.setup = ()=>{
+        api.log('Browser file system initialized')
+    }
+    api.export(fs_api)
+}).catch((e)=>{
+    console.error(e)
+    api.alert('Failed to initialize the browser file system.')
+})
+
+</script>
