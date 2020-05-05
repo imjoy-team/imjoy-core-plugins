@@ -94,7 +94,6 @@ class FileSystemManager {
 const fileSystem = new FileSystemManager()
 
 fileSystem.init().then((fs_api)=>{
-    console.log(fs_api)
     fs_api.setup = ()=>{
         api.log('Browser file system initialized')
     }
