@@ -350,7 +350,6 @@ const toObject = (x) => {
     }
 }
 function executePythonCode(code, imjoy_interface, resolve_api, reject_api) {
-    
     try{
         window.pyodide.runPython(code.content);
     }
@@ -475,7 +474,7 @@ async function setup(){
                     };
                     }
                 }
-                resolve_api(_api);
+                resolve(_api);
                 }
                 else if (typeof p === 'object') {
                 const _api = {};
@@ -489,7 +488,7 @@ async function setup(){
                     };
                     }
                 }
-                resolve_api(_api);
+                resolve(_api);
                 } else {
                 throw "unsupported api export";
                 }
