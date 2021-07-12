@@ -350,46 +350,7 @@ const toObject = (x) => {
     }
 }
 function executePythonCode(code, imjoy_interface, resolve_api, reject_api) {
-    window.imjoy_interface = imjoy_interface
-    window.imjoy_interface.export = function(plugin_interfaces) {
-        const unwrap_func_args = window.pyodide.pyimport("unwrap_func_args");
-        const callable = window.pyodide.pyimport("callable");
-
-        const p = toObject(plugin_interfaces);
-        if (pyodide.isPyProxy(p)) {
-        const _api = {_rintf: true};
-        const getattr = window.pyodide.pyimport("getattr");
-        const hasattr = window.pyodide.pyimport("hasattr");
-
-        for (let k of Object.getOwnPropertyNames(p)) {
-            if (!k.startsWith("_") && hasattr(p, k) && callable(getattr(p, k))) {
-            _api[k] = async function() {
-                const func = unwrap_func_args(getattr(p, k));
-                const result = await Promise.resolve(func(...Array.prototype.slice.call(arguments)))
-                return toObject(result);
-            };
-            }
-        }
-        resolve_api(_api);
-        }
-        else if (typeof p === 'object') {
-        const _api = {};
-        for (let k in p) {
-            if (!k.startsWith("_") && callable(p[k])) {
-            const func = unwrap_func_args(p[k]);
-            _api[k] = async function() {
-                const func = unwrap_func_args(p[k]);
-                const result = await Promise.resolve(func(...Array.prototype.slice.call(arguments)))
-                return toObject(result);
-            };
-            }
-        }
-        resolve_api(_api);
-        } else {
-        throw "unsupported api export";
-        }
-    };
-
+    
     try{
         window.pyodide.runPython(code.content);
     }
@@ -494,6 +455,46 @@ async function setup(){
         async startPlugin(config, imjoy_interface, engine_utils){
             return new Promise(async (resolve, reject)=>{
             if(pyodidePromise) await pyodidePromise;
+            window.imjoy_interface = imjoy_interface
+            window.imjoy_interface.export = function(plugin_interfaces) {
+                const unwrap_func_args = window.pyodide.pyimport("unwrap_func_args");
+                const callable = window.pyodide.pyimport("callable");
+
+                const p = toObject(plugin_interfaces);
+                if (pyodide.isPyProxy(p)) {
+                const _api = {_rintf: true};
+                const getattr = window.pyodide.pyimport("getattr");
+                const hasattr = window.pyodide.pyimport("hasattr");
+
+                for (let k of Object.getOwnPropertyNames(p)) {
+                    if (!k.startsWith("_") && hasattr(p, k) && callable(getattr(p, k))) {
+                    _api[k] = async function() {
+                        const func = unwrap_func_args(getattr(p, k));
+                        const result = await Promise.resolve(func(...Array.prototype.slice.call(arguments)))
+                        return toObject(result);
+                    };
+                    }
+                }
+                resolve_api(_api);
+                }
+                else if (typeof p === 'object') {
+                const _api = {};
+                for (let k in p) {
+                    if (!k.startsWith("_") && callable(p[k])) {
+                    const func = unwrap_func_args(p[k]);
+                    _api[k] = async function() {
+                        const func = unwrap_func_args(p[k]);
+                        const result = await Promise.resolve(func(...Array.prototype.slice.call(arguments)))
+                        return toObject(result);
+                    };
+                    }
+                }
+                resolve_api(_api);
+                } else {
+                throw "unsupported api export";
+                }
+            };
+
             window.pyodide.runPython(startup_script);
             if(config["requirements"])
                 await installRequirements(config["requirements"])
