@@ -8,7 +8,7 @@
     "type": "web-worker",
     "tags": [],
     "ui": "",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "cover": "",
     "description": "[TODO: describe this plugin with one sentence.]",
     "icon": "extension",
@@ -391,7 +391,6 @@ function executePythonCode(code, imjoy_interface, resolve_api, reject_api) {
     };
 
     try{
-        window.pyodide.runPython(startup_script);
         window.pyodide.runPython(code.content);
     }
     catch(e){
@@ -407,54 +406,54 @@ async function installRequirements(requirements) {
         ? [requirements]
         : requirements;
     if (Array.isArray(requirements)) {
-    const python_packages = [];
-    for (var i = 0; i < requirements.length; i++) {
-        if(installedRequirements.includes(requirements[i].toLowerCase())) continue;
-        if (
-            requirements[i].toLowerCase().endsWith(".css") ||
-            requirements[i].startsWith("css:")
-        ) {
-        if (requirements[i].startsWith("css:")) {
-            requirements[i] = requirements[i].slice(4);
+        const python_packages = [];
+        for (var i = 0; i < requirements.length; i++) {
+            if(installedRequirements.includes(requirements[i].toLowerCase())) continue;
+            if (
+                requirements[i].toLowerCase().endsWith(".css") ||
+                requirements[i].startsWith("css:")
+            ) {
+            if (requirements[i].startsWith("css:")) {
+                requirements[i] = requirements[i].slice(4);
+            }
+                link_node = document.createElement("link");
+                link_node.rel = "stylesheet";
+                link_node.href = requirements[i];
+                document.head.appendChild(link_node);
+            } else if (
+                // requirements[i].toLowerCase().endsWith(".js") ||
+                requirements[i].startsWith("js:")
+            ) {
+            if (requirements[i].startsWith("js:")) {
+                requirements[i] = requirements[i].slice(3);
+            }
+                importScripts(requirements[i]);
+            } else if (requirements[i].startsWith("cache:")) {
+            //ignore cache
+            } else if (
+                requirements[i].toLowerCase().endsWith(".js") ||
+                requirements[i].startsWith("package:")
+            ) {
+            if (requirements[i].startsWith("package:")) {
+                requirements[i] = requirements[i].slice(8);
+            }
+                python_packages.push(requirements[i]);
+            } else if (
+                requirements[i].startsWith("http:") ||
+                requirements[i].startsWith("https:")
+            ) {
+            console.log(
+                "Unprocessed requirements url: " + requirements[i]
+            );
+            } else {
+                python_packages.push(requirements[i]);
+            }
         }
-            link_node = document.createElement("link");
-            link_node.rel = "stylesheet";
-            link_node.href = requirements[i];
-            document.head.appendChild(link_node);
-        } else if (
-            // requirements[i].toLowerCase().endsWith(".js") ||
-            requirements[i].startsWith("js:")
-        ) {
-        if (requirements[i].startsWith("js:")) {
-            requirements[i] = requirements[i].slice(3);
+        if(python_packages.length>0){
+            const pyinstallRequirements = window.pyodide.pyimport("install_requirements");
+            await pyinstallRequirements(python_packages)
+            python_packages.forEach(pack=>installedRequirements.push(pack))
         }
-            importScripts(requirements[i]);
-        } else if (requirements[i].startsWith("cache:")) {
-        //ignore cache
-        } else if (
-            requirements[i].toLowerCase().endsWith(".js") ||
-            requirements[i].startsWith("package:")
-        ) {
-        if (requirements[i].startsWith("package:")) {
-            requirements[i] = requirements[i].slice(8);
-        }
-            python_packages.push(requirements[i]);
-        } else if (
-            requirements[i].startsWith("http:") ||
-            requirements[i].startsWith("https:")
-        ) {
-        console.log(
-            "Unprocessed requirements url: " + requirements[i]
-        );
-        } else {
-        python_packages.push(requirements[i]);
-        }
-        installedRequirements.push(requirements[i].toLowerCase())
-    }
-    if(python_packages.length>0){
-        const pyinstallRequirements = window.pyodide.pyimport("install_requirements");
-        await pyinstallRequirements(python_packages)
-    }
     } else {
         throw "unsupported requirements definition";
     }
@@ -485,8 +484,8 @@ async function setup(){
                 connected = true;
             }
             catch(e){
-            connected = false;
-            throw e;
+                connected = false;
+                throw e;
             }
         },
         disconnect(){
@@ -495,15 +494,16 @@ async function setup(){
         async startPlugin(config, imjoy_interface, engine_utils){
             return new Promise(async (resolve, reject)=>{
             if(pyodidePromise) await pyodidePromise;
+            window.pyodide.runPython(startup_script);
             if(config["requirements"])
                 await installRequirements(config["requirements"])
                 const script = config["scripts"][0]
                 const lang = config["scripts"][0]["attrs"]["lang"]
                 if(lang === 'python'){
-                executePythonCode(script, imjoy_interface, resolve, reject);
+                    executePythonCode(script, imjoy_interface, resolve, reject);
                 }
                 else{
-                throw new Error("Unsupported language: "+lang)
+                    throw new Error("Unsupported language: "+lang)
                 }
             })
         },
