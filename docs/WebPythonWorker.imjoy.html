@@ -455,6 +455,14 @@ async function setup(){
             return new Promise(async (resolve, reject)=>{
             if(pyodidePromise) await pyodidePromise;
             window.imjoy_interface = imjoy_interface
+            for(let k of Object.keys(imjoy_interface)){
+                const origin_func = imjoy_interface[k]
+                imjoy_interface[k] = function(){
+                    const newArgs = []
+                    const args = Array.prototype.slice.call(arguments); 
+                    return origin_func.apply(this, args.map(toObject));
+                }
+            }
             window.imjoy_interface.export = function(plugin_interfaces) {
                 const unwrap_func_args = window.pyodide.pyimport("unwrap_func_args");
                 const callable = window.pyodide.pyimport("callable");
