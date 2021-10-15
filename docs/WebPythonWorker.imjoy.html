@@ -8,7 +8,7 @@
     "type": "web-worker",
     "tags": [],
     "ui": "",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "cover": "",
     "description": "[TODO: describe this plugin with one sentence.]",
     "icon": "extension",
@@ -188,6 +188,8 @@ def _decode(a_object, with_promise=False):
     """Decode object."""
     if a_object is None:
         return a_object
+    if hasattr(a_object, 'to_py'):
+        a_object = a_object.to_py()
     if isinstance(a_object, dict) and "_rtype" in a_object:
         b_object = None
         if (
@@ -318,7 +320,7 @@ for k in Object.keys(imjoy_interface):
         wrapped_api[k] = func
 
 def unwrap_func_args(func):
-    def wrapped_function(*args):
+    def wrapped_function(*args):        
         return func(*_decode(args))
     return wrapped_function
 
