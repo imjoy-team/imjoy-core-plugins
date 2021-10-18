@@ -8,7 +8,7 @@
     "type": "web-worker",
     "tags": [],
     "ui": "",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "cover": "",
     "description": "[TODO: describe this plugin with one sentence.]",
     "icon": "extension",
@@ -25,7 +25,6 @@
 </config>
 
 <script lang="javascript">
-const window = self;
 const startup_script = `
 import asyncio
 from js import imjoy_interface, Object
@@ -353,7 +352,7 @@ const toObject = (x) => {
 }
 function executePythonCode(code, imjoy_interface, resolve_api, reject_api) {
     try{
-        window.pyodide.runPython(code.content);
+        pyodide.runPython(code.content);
     }
     catch(e){
         console.error(e)
@@ -412,7 +411,7 @@ async function installRequirements(requirements) {
             }
         }
         if(python_packages.length>0){
-            const pyinstallRequirements = window.pyodide.pyimport("install_requirements");
+            const pyinstallRequirements = pyodide.globals.get("install_requirements");
             await pyinstallRequirements(python_packages)
             python_packages.forEach(pack=>installedRequirements.push(pack))
         }
@@ -456,7 +455,7 @@ async function setup(){
         async startPlugin(config, imjoy_interface, engine_utils){
             return new Promise(async (resolve, reject)=>{
             if(pyodidePromise) await pyodidePromise;
-            window.imjoy_interface = imjoy_interface
+            globalThis.imjoy_interface = imjoy_interface
             for(let k of Object.keys(imjoy_interface)){
                 const origin_func = imjoy_interface[k]
                 imjoy_interface[k] = function(){
@@ -465,15 +464,15 @@ async function setup(){
                     return origin_func.apply(this, args.map(toObject));
                 }
             }
-            window.imjoy_interface.export = function(plugin_interfaces) {
-                const unwrap_func_args = window.pyodide.pyimport("unwrap_func_args");
-                const callable = window.pyodide.pyimport("callable");
+            globalThis.imjoy_interface.export = function(plugin_interfaces) {
+                const unwrap_func_args = pyodide.globals.get("unwrap_func_args");
+                const callable = pyodide.globals.get("callable");
 
                 const p = toObject(plugin_interfaces);
                 if (pyodide.isPyProxy(p)) {
                 const _api = {_rintf: true};
-                const getattr = window.pyodide.pyimport("getattr");
-                const hasattr = window.pyodide.pyimport("hasattr");
+                const getattr = pyodide.globals.get("getattr");
+                const hasattr = pyodide.globals.get("hasattr");
 
                 for (let k of Object.getOwnPropertyNames(p)) {
                     if (!k.startsWith("_") && hasattr(p, k) && callable(getattr(p, k))) {
@@ -504,7 +503,7 @@ async function setup(){
                 }
             };
 
-            window.pyodide.runPython(startup_script);
+            pyodide.runPython(startup_script);
             if(config["requirements"])
                 await installRequirements(config["requirements"])
                 const script = config["scripts"][0]
