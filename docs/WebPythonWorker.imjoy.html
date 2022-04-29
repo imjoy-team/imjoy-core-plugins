@@ -422,8 +422,8 @@ async function installRequirements(requirements) {
 
 async function setupPyodide() {
     if(self.pyodide) return;
-    importScripts('https://cdn.jsdelivr.net/pyodide/dev/full/pyodide.js');
-    self.pyodide = await loadPyodide({ indexURL : 'https://cdn.jsdelivr.net/pyodide/dev/full/' });
+    importScripts('https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js');
+    self.pyodide = await loadPyodide({ indexURL : 'https://cdn.jsdelivr.net/pyodide/v0.20.0/full/' });
     await self.pyodide.loadPackage(['micropip']);
 }
 
