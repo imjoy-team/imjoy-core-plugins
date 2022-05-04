@@ -8,7 +8,7 @@
     "type": "web-worker",
     "tags": [],
     "ui": "",
-    "version": "0.2.9",
+    "version": "0.2.11",
     "cover": "",
     "description": "[TODO: describe this plugin with one sentence.]",
     "icon": "extension",
@@ -1219,14 +1219,12 @@ import traceback
 import asyncio
 import os
 
-os.environ["IMJOY_RPC_CONNECTION"] = 'unknown'
-
 async def install_requirements(requirements):
     await micropip.install(requirements)
 
 async def run():
     try:
-        await micropip.install(["imjoy-rpc==0.3.42", "numpy"])
+        await micropip.install(["imjoy-rpc==0.5.10a2", "numpy"])
         # map imjoy_rpc to imjoy
         import imjoy_rpc
         from imjoy_rpc import connect_to_pyodide
@@ -1234,6 +1232,7 @@ async def run():
         m = ModuleType("imjoy")
         sys.modules["imjoy"] = m
         api = await connect_to_pyodide()
+        imjoy_rpc.api = api # patch api object
         m.api = api
         js.__resolve(api)
     except Exception as e:
