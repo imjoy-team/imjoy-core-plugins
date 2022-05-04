@@ -1243,7 +1243,7 @@ async def install_requirements(requirements):
 
 async def run():
     try:
-        await micropip.install(["imjoy-rpc==0.5.10a2", "numpy"])
+        await micropip.install(["imjoy-rpc", "numpy"])
         # map imjoy_rpc to imjoy
         import imjoy_rpc
         from imjoy_rpc import connect_to_pyodide
