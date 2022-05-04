@@ -46,6 +46,25 @@ const typedArrayToDtypeMapping = {
 };
 
 
+const typedArrayToDtypeKeys = [];
+for (const arrType of Object.keys(typedArrayToDtypeMapping)) {
+  typedArrayToDtypeKeys.push(eval(arrType));
+}
+
+function typedArrayToDtype(obj) {
+  let dtype = typedArrayToDtypeMapping[obj.constructor.name];
+  if (!dtype) {
+    const pt = Object.getPrototypeOf(obj);
+    for (const arrType of typedArrayToDtypeKeys) {
+      if (pt instanceof arrType) {
+        dtype = typedArrayToDtypeMapping[arrType.name];
+        break;
+      }
+    }
+  }
+  return dtype;
+}
+
 const dtypeToTypedArray = {
   int8: Int8Array,
   int16: Int16Array,
