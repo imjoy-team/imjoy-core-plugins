@@ -8,7 +8,7 @@
     "type": "web-worker",
     "tags": [],
     "ui": "",
-    "version": "0.2.11",
+    "version": "0.2.12",
     "cover": "",
     "description": "[TODO: describe this plugin with one sentence.]",
     "icon": "extension",
@@ -1270,14 +1270,20 @@ function runStartup(){
 
 const toObject = (x) => {
     if(x===undefined || x===null) return x;
-    if(self.pyodide.isPyProxy(x))
+    if(self.pyodide.isPyProxy(x)){
         x = x.toJs({dict_converter : Object.fromEntries})
-
-    if (x instanceof Map) {
-        return Object.fromEntries(Array.from(
-            x.entries(),
-            ([k, v]) => [k, toObject(v)]
-        ))
+        return toObject(x)
+    }
+    
+    // This is needed because we need to convert Uint8Array to ArrayBuffer for numpy etc.
+    if(x instanceof Object && x.constructor === Object){
+        const xe = {}
+        for(let k of Object.keys(x)){
+            xe[k] = toObject(x[k])
+        }
+        return xe;
+    } else if (x instanceof Uint8Array){
+        return x.buffer
     } else if (x instanceof Array) {
         return x.map(toObject);
     } else {
